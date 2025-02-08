@@ -1,5 +1,6 @@
 using MyceliumNetworking;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace KeepCameraAfterDeath.Patches;
 
@@ -52,8 +53,6 @@ public class PersistentObjectsHolderPatch
                 }
 
                 self.m_PersistentObjects.Remove(item);
-
-                return; // break here, don't look for more cameras.
             }
         }
     }
