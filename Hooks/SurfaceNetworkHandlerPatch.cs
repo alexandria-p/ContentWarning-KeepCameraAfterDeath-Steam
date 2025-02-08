@@ -25,6 +25,13 @@ public class SurfaceNetworkHandlerPatch
         // Set if camera was brought home
         if (MyceliumNetwork.IsHost && TimeOfDayHandler.TimeOfDay == TimeOfDay.Evening)
         {
+            // - uses host settings to set rewards
+            if (KeepCameraAfterDeath.Instance.PlayerSettingEnableRewardForCameraReturn)
+            {
+                // Determine rewards for players (before we start spawning cameras and changing numbers)
+                KeepCameraAfterDeath.Instance.SetPendingRewardForAllPlayers();
+            }
+
             if (KeepCameraAfterDeath.Instance.PreservedCameraInstanceDataCollectionForHost.Any())
             {
                 Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Trying to restore backed-up camera footage");
@@ -35,13 +42,6 @@ public class SurfaceNetworkHandlerPatch
             else
             {
                 Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Could not find any camera footage to restore");
-            }
-        
-            // - uses host settings to set rewards
-            if (KeepCameraAfterDeath.Instance.PlayerSettingEnableRewardForCameraReturn)
-            {
-                // Determine rewards for players
-                KeepCameraAfterDeath.Instance.SetPendingRewardForAllPlayers();
             }
         }
 
