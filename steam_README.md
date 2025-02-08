@@ -42,7 +42,7 @@ The host decides whether or not rewards should be distributed for returning with
 
 [h3]Contact Us[/h3] 
 
-🚨 If you found this mod on any site except for [b]Thunderstore[/b] or [b]r2 Modman[b/] (or on the Steam Workshop under HumbleKraken), then I cannot guarantee the safety of the file you have downloaded! 🚨
+🚨 If you found this mod on any site except for [b]Thunderstore[/b] or [b]r2 Modman[/b] (or on the Steam Workshop under HumbleKraken), then I cannot guarantee the safety of the file you have downloaded! 🚨
 
 Please report this back to me on my GitHub https://github.com/alexandria-p or my Twitter account https://twitter.com/HumbleKraken.
 
