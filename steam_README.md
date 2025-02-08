@@ -32,7 +32,7 @@ The host decides whether or not rewards should be distributed for returning with
 [i]v2.0.0[/i]
 [list]
     [*]Allow recovery of multiple cameras in a single round
-    [*]Add compatibility with ContentPOVs (a mod that was overriding the vanilla functionality of the PickupSpawner that I was piggy-backing for this mod)
+    [*]Add compatibility with ContentPOVs mod
 [/list]
 
 [i]v1.3.0[/i]
