@@ -41,16 +41,17 @@ public class VideoCameraPatch
             && noValidVideoDataOnCamera)
         {
             ItemInstanceData firstAvailablePreservedData = KeepCameraAfterDeath.Instance.PreservedCameraInstanceDataCollectionForHost.FirstOrDefault();
-            var foundPreservedVIE = firstAvailablePreservedData.TryGetEntry<VideoInfoEntry>(out VideoInfoEntry vie);
+            var foundPreservedVIE = firstAvailablePreservedData.TryGetEntry<VideoInfoEntry>(out VideoInfoEntry preservedVie);
 
-            var validPreservedDataExists = foundPreservedVIE && vie.videoID.id != Guid.Empty;
+            var validPreservedDataExists = foundPreservedVIE && preservedVie.videoID.id != Guid.Empty;
 
             if (validPreservedDataExists)
             {
-                Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Restore preserved footage with ID {vie.videoID.id} onto empty camera");
+                Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Restoring preserved footage with ID #{preservedVie.videoID.id} onto empty camera");
 
                 // Restore preserved footage onto this empty camera
-                data.AddDataEntry(vie);
+                data.AddDataEntry(preservedVie);
+                KeepCameraAfterDeath.Instance.SetRestoredVideoHandleIdForHost(preservedVie.videoID.id);
 
                 // Once restored, clear preserved data as we no longer need it
                 KeepCameraAfterDeath.Instance.DeletePreservedCameraInstanceDataFromCollection(firstAvailablePreservedData);
