@@ -20,6 +20,15 @@ public class UploadCompleteStatePatch
     private static void UploadCompleteState_PlayVideo(On.UploadCompleteState.orig_PlayVideo orig, UploadCompleteState self, CameraRecording recording, int score, int views, int money, Comment[] comments)
     {
         // all the clients need to play the video, the host send out RPCs to them to set their ClientDoNotPlayTheseSpookTubeVideoWithRewards collection up
+        Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] There are {KeepCameraAfterDeath.Instance.ClientDoNotPlayTheseSpookTubeVideoWithRewards.Count} videos that should not be rewarded by SpookTube.");
+        if (KeepCameraAfterDeath.Instance.ClientDoNotPlayTheseSpookTubeVideoWithRewards.Count > 0)
+        {
+            KeepCameraAfterDeath.Instance.ClientDoNotPlayTheseSpookTubeVideoWithRewards.ForEach(videoGuid =>
+            {
+                Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] #videoGuid.");
+            });
+        }
+
         if (KeepCameraAfterDeath.Instance.ClientDoNotPlayTheseSpookTubeVideoWithRewards.Any(_ => _.Equals(recording.videoHandle.id)))
         {
             Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] This was recovered footage - host says 'do not award views or money' for video with ID #{recording.videoHandle.id}");
