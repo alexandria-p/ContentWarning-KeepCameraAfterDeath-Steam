@@ -1,24 +1,22 @@
+using HarmonyLib;
 using System.Linq;
 using UnityEngine;
 
 namespace KeepCameraAfterDeath.Patches;
 
+// UploadCompleteUI.PlayVideo -> DisplayVideoEval -> Calls onPlayed.invoke -> Triggers UploadVideoStation.RPC_OnEvaluationComplete
+// UploadVideoStation.RPC_OnEvaluationComplete -> calls UploadVideoStation.m_stateMachine -> UploadCompleteState.PlayVideo
+// TLDR; This method is played on UploadStation.RPC_OnEvaluationComplete
+
+// The original UploadCompleteState.PlayVideo method will:
+// 1. Play the video via UploadCompleteUI.PlayVideo, and
+// 2. Award moneys and views once the delegate "PlayVideo" is completed
+[HarmonyPatch(typeof(UploadCompleteState))]
 public class UploadCompleteStatePatch
 {
-    internal static void Init()
-    {
-        On.UploadCompleteState.PlayVideo += UploadCompleteState_PlayVideo;
-    }
-
-    // UploadCompleteUI.PlayVideo -> DisplayVideoEval -> Calls onPlayed.invoke -> Triggers UploadVideoStation.RPC_OnEvaluationComplete
-    // UploadVideoStation.RPC_OnEvaluationComplete -> calls UploadVideoStation.m_stateMachine -> UploadCompleteState.PlayVideo
-    // TLDR; This method is played on UploadStation.RPC_OnEvaluationComplete
-
-    // The original UploadCompleteState_PlayVideo method will:
-    // 1. Play the video via UploadCompleteUI.PlayVideo, and
-    // 2. Award moneys and views once the delegate "PlayVideo" is completed
-
-    private static void UploadCompleteState_PlayVideo(On.UploadCompleteState.orig_PlayVideo orig, UploadCompleteState self, CameraRecording recording, int score, int views, int money, bool failedExtraction, Comment[] comments)
+    [HarmonyPatch(nameof(UploadCompleteState.PlayVideo))]
+    [HarmonyPrefix]
+    private static bool PlayVideo_Prefix(UploadCompleteState __instance, CameraRecording recording, int score, int views, int money, bool failedExtraction, Comment[] comments)
     {
         // all the clients need to play the video, the host send out RPCs to them to set their ClientDoNotPlayTheseSpookTubeVideoWithRewards collection up
         Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] There are {KeepCameraAfterDeath.Instance.ClientDoNotPlayTheseSpookTubeVideoWithRewards.Count} videos that should not be rewarded by SpookTube.");
@@ -33,18 +31,15 @@ public class UploadCompleteStatePatch
         if (KeepCameraAfterDeath.Instance.ClientDoNotPlayTheseSpookTubeVideoWithRewards.Any(_ => _.Equals(recording.videoHandle.id)))
         {
             Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] This was recovered footage - host says 'do not award views or money' for video with ID #{recording.videoHandle.id}");
-            self.m_ui.PlayVideo(recording, views, comments, delegate
+            __instance.m_ui.PlayVideo(recording, views, comments, delegate
             {
                 // let the recording play, but don't bother doing anything once the recording is complete
                 // (typically we would award views and money within this delegate)
             });
-            return;
+            return false; // skip original
         }
-        else
-        {
-            Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Award views and money for video with ID #{recording.videoHandle.id}");
-            orig(self, recording, score, views, money, failedExtraction, comments);
-            return;            
-        }
+
+        Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Award views and money for video with ID #{recording.videoHandle.id}");
+        return true; // run original
     }
 }

@@ -1,36 +1,36 @@
+using HarmonyLib;
 using MyceliumNetworking;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace KeepCameraAfterDeath.Patches;
 
+[HarmonyPatch(typeof(PersistentObjectsHolder))]
 public class PersistentObjectsHolderPatch
 {
-    internal static void Init()
-    {
-        On.PersistentObjectsHolder.FindPersistantObjects += PersistentObjectsHolder_FindPersistantObjects;
-    }
-
     // called by PhotonGameLobbyHandler.ReturnToSurface
     // only the host runs ReturnToSurface & thus runs this function
-    private static void PersistentObjectsHolder_FindPersistantObjects(On.PersistentObjectsHolder.orig_FindPersistantObjects orig, PersistentObjectsHolder self)
+
+    private static List<VideoCamera>? _existingCamerasUnderground;
+
+    [HarmonyPatch(nameof(PersistentObjectsHolder.FindPersistantObjects))]
+    [HarmonyPrefix]
+    private static void FindPersistantObjects_Prefix(PersistentObjectsHolder __instance)
     {
-        var existingCamerasUnderground = FindVideoCamerasInSet(self.m_PersistentObjects);
-        
-        orig(self);
+        _existingCamerasUnderground = FindVideoCamerasInSet(__instance.m_PersistentObjects);
+    }
 
-        if (!MyceliumNetwork.IsHost)
-        {
-            return;
-        }
+    [HarmonyPatch(nameof(PersistentObjectsHolder.FindPersistantObjects))]
+    [HarmonyPostfix]
+    private static void FindPersistantObjects_Postfix(PersistentObjectsHolder __instance)
+    {
+        if (!MyceliumNetwork.IsHost) return;
 
-        // only continue if this is the host
-
-        var numObjects = self.m_PersistentObjects.Count;
+        var numObjects = __instance.m_PersistentObjects.Count;
 
         for (int i = numObjects - 1; i >= 0; i--)
         {
-            PersistentObjectInfo item = self.m_PersistentObjects[i];
+            PersistentObjectInfo item = __instance.m_PersistentObjects[i];
             var objectInstanceData = item.InstanceData;
             var objectGuid = objectInstanceData.m_guid;
 
@@ -38,7 +38,7 @@ public class PersistentObjectsHolderPatch
             if (CameraHandler.TryGetCamera(objectGuid, out var videoCamera))
             {
                 // if it was already underground, skip
-                if (existingCamerasUnderground.Contains(videoCamera))
+                if (_existingCamerasUnderground != null && _existingCamerasUnderground.Contains(videoCamera))
                 {
                     continue;
                 }
@@ -47,17 +47,16 @@ public class PersistentObjectsHolderPatch
 
                 // We don't want to leave a clone of the camera underground when we are gonna make a new one on the surface.
                 // so we want to remove this camera from persistent objects.
-                if (self.m_PersistentObjectDic.ContainsKey(item.Pickup))
+                if (__instance.m_PersistentObjectDic.ContainsKey(item.Pickup))
                 {
-                    self.m_PersistentObjectDic.Remove(item.Pickup);
+                    __instance.m_PersistentObjectDic.Remove(item.Pickup);
                 }
 
-                self.m_PersistentObjects.Remove(item);
+                __instance.m_PersistentObjects.Remove(item);
             }
         }
     }
 
-    // helper method
     private static List<VideoCamera> FindVideoCamerasInSet(List<PersistentObjectInfo> persistantObjects)
     {
         var list = new List<VideoCamera>();

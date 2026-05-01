@@ -30,9 +30,10 @@ The host decides whether or not rewards should be distributed for returning with
 
 [h3]Changelog[/h3]
 
-[i]v2.0.2[/i]
+[i]v3.0.0[/i]
 [list]
     [*]Fix mod so it is compatible with 2026 CW update
+    [*]Convert mod to Harmony, remove MM_HOOK dependency
 [/list]
 
 [i]v2.0.1[/i]

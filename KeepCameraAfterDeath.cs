@@ -1,6 +1,5 @@
-using BepInEx;
+using HarmonyLib;
 using System.Reflection;
-using MonoMod.RuntimeDetour.HookGen;
 using KeepCameraAfterDeath.Patches;
 using MyceliumNetworking;
 using Zorro.Settings;
@@ -16,8 +15,7 @@ namespace KeepCameraAfterDeath;
 // since this alters the gameplay experience by removing risk of leaving camera behind,
 // I have set it to "not vanilla"
 [ContentWarningPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_VERSION, false)]
-[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-public class KeepCameraAfterDeathSteam : BaseUnityPlugin
+public class KeepCameraAfterDeathSteam
 {
     // this static constructor is used to init the Steam version of this mod.
     static KeepCameraAfterDeathSteam()
@@ -39,7 +37,7 @@ public class KeepCameraAfterDeathSteam : BaseUnityPlugin
         gameObject.AddComponent<KeepCameraAfterDeath>();
 
         // Jan 2025 - make sure CW update doesnt destroy this mod
-        DontDestroyOnLoad(gameObject);
+        UnityEngine.Object.DontDestroyOnLoad(gameObject);
     }
 }
 
@@ -50,7 +48,8 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
     public const uint myceliumNetworkModId = 61812; // meaningless, as long as it is the same between all the clients
     public static KeepCameraAfterDeath Instance { get; private set; } = null!;
 
-    
+    private Harmony? _harmony;
+
     public bool PlayerSettingEnableRewardForCameraReturn { get; private set; }
     public bool PlayerSettingDoNotRewardRecoveredSpookTubeFootage { get; private set; }
     public float PlayerSettingMetaCoinReward { get; private set; }
@@ -65,7 +64,8 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
     private void Awake()
     {
         Instance = this;
-        HookAll();
+        _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
+        _harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
 
     private void Start()
@@ -77,21 +77,8 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
     void OnDestroy()
     {
         //Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] ON DESTROY!");
+        _harmony?.UnpatchSelf();
         MyceliumNetwork.DeregisterNetworkObject(Instance, myceliumNetworkModId);
-    }
-
-    internal static void HookAll()
-    {
-        SurfaceNetworkHandlerPatch.Init();
-        VideoCameraPatch.Init();
-        PersistentObjectsHolderPatch.Init();
-        PlayerPatch.Init();
-        UploadCompleteStatePatch.Init();
-    }
-
-    internal static void UnhookAll()
-    {
-        HookEndpointManager.RemoveAllOwnedBy(Assembly.GetExecutingAssembly());
     }
 
     public void SetPlayerSettingDoNotRewardRecoveredSpookTubeFootage(bool settingEnabled)

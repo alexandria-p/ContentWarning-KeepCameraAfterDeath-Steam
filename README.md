@@ -29,8 +29,9 @@ The host decides whether or not rewards should be distributed for returning with
 
 ### Changelog
 
-**v2.0.2**
+**v3.0.0**
 - Fix mod so it is compatible with 2026 CW update
+- Convert mod to Harmony, remove MM_HOOK dependency
 
 **v2.0.1**
 -  Add the option to toggle rewards on/off for recovered footage when watching it on the SpookTube TV
