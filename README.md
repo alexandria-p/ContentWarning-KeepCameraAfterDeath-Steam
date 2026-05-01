@@ -29,6 +29,9 @@ The host decides whether or not rewards should be distributed for returning with
 
 ### Changelog
 
+**v2.0.2**
+- Fix mod so it is compatible with 2026 CW update
+
 **v2.0.1**
 -  Add the option to toggle rewards on/off for recovered footage when watching it on the SpookTube TV
 

@@ -4,7 +4,7 @@
         <AssemblyName>alexandria-p.KeepCameraAfterDeath</AssemblyName>
         <Product>KeepCameraAfterDeath</Product>
         <!-- Change to whatever version you're currently on. -->
-        <Version>2.0.1</Version>
+        <Version>2.0.2</Version>
     </PropertyGroup>
 
     <!-- Project Properties -->
@@ -41,14 +41,19 @@
 
     <!-- Primary Package References -->
 	<!-- These are handled by the NuGet Package Manager for this solution -->
+	
+	<!-- FIXED: Added PrivateAssets="all" to all BepInEx packages so they are            -->
+	<!-- build-only tools and not baked in as runtime dependencies. Without this,         -->
+	<!-- ContentLoader fails with ReflectionTypeLoadException because it can't find       -->
+	<!-- the specific BepInEx version your assembly was compiled against.                 -->
     <ItemGroup>
-        <PackageReference Include="BepInEx.Analyzers" Version="1.*"  />
+		<PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
 		<!-- Use BepInEx's Assembly Publicizer to tell IDEs and the compiler that every field, method, etc. is public, in the game assemblies -->
-		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.*"/>
-        <PackageReference Include="BepInEx.Core" Version="5.*"  />
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
-        <PackageReference Include="UnityEngine.Modules" Version="2022.3.10"  />		
-		<PackageReference Include="RugbugRedfern.MyceliumNetworking.CW" Version="1.0.14" />
+		<PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.*" PrivateAssets="all" />
+		<PackageReference Include="BepInEx.Core" Version="5.*" PrivateAssets="all" />
+		<PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" PrivateAssets="all" />
+		<PackageReference Include="UnityEngine.Modules" Version="2022.3.10" PrivateAssets="all" />
+		<PackageReference Include="RugbugRedfern.MyceliumNetworking.CW" Version="1.0.14" PrivateAssets="all" />
 		<!-- Publicize by assembly name -->
 		<Publicize Include="Assembly-CSharp" />
     </ItemGroup>

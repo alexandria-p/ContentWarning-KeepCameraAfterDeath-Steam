@@ -25,9 +25,15 @@ The host decides whether or not rewards should be distributed for returning with
     [*]Install the mod on the Steam Workshop
     [*]Ensure you have its dependencies also installed
     [*]If there is any trouble, try moving Content Loader and Mycelium higher up the mod loader than this mod.
+    [*]Then check the "Troubleshooting" section below
 [/list]
 
 [h3]Changelog[/h3]
+
+[i]v2.0.2[/i]
+[list]
+    [*]Fix mod so it is compatible with 2026 CW update
+[/list]
 
 [i]v2.0.1[/i]
 [list]
@@ -53,7 +59,25 @@ Please report this back to me on my GitHub https://github.com/alexandria-p or my
 
 Feel free to tweet at me too if you enjoyed using this mod - especially if you attach the footage you were able to save!
 
+[h1]Troubleshooting[/h1]
+
+Please try the following:
+[list]
+    [*]Manually delete all folders and game files inside of your Content Warning installation
+    [*]Hint: your game directory can be found at [Steam\steamapps\common\Content Warning]
+    [*]Then launch the game through Steam.
+    [*]Steam will patch the game installation (this means Steam will reinstall the missing files)
+[/list]
+
+If you are coming from Thunderstore to Steam Workshop, sometimes there are leftover artifacts that are interfering with Content Loader, a mod dependency of Keep Camera After Death.
+
+Following these steps should let the 'door stop' for Content Loader run correctly, and ensure that BepinEx shows up as a mod preloader mono-assembly.
+
+Once there is a better fix, I will keep you updated.
+
 If you would like to report any bugs, comment on the Workshop mod page or join the Content Warning modding discord and find me there.
+
+https://discord.com/invite/yeGDSm4gFq
 
 [h1]Why do I need this mod[/h1]
 
@@ -81,13 +105,7 @@ Any camera that this mod "saves" will no longer spawn underground on future runs
 
 [h1]Does this mod work if my crew has multiple cameras?[/h1]
 
-Yes...with a caveat.
-
-Remember how this mod searches for & preserves the footage from dropped cameras when a run ends?
-
-It only preserves the footage of the *first* newly dropped camera it finds, to load onto the new camera it spawns on the surface.
-
-If your crew drop multiple cameras underground in a single run, then all the remaining cameras will continue to persist in the underground world (as they do in the vanilla game) for your crew to find.
+Yes! v2.0.0 now allows the recovery of multiple cameras per round. It is also compatible with ContentPOVs (a mod that spawns cameras slightly differently to vanilla Content Warning).
 
 [h1]Known bugs[/h1]
 [list]

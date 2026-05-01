@@ -17,7 +17,8 @@ public class UploadCompleteStatePatch
     // The original UploadCompleteState_PlayVideo method will:
     // 1. Play the video via UploadCompleteUI.PlayVideo, and
     // 2. Award moneys and views once the delegate "PlayVideo" is completed
-    private static void UploadCompleteState_PlayVideo(On.UploadCompleteState.orig_PlayVideo orig, UploadCompleteState self, CameraRecording recording, int score, int views, int money, Comment[] comments)
+
+    private static void UploadCompleteState_PlayVideo(On.UploadCompleteState.orig_PlayVideo orig, UploadCompleteState self, CameraRecording recording, int score, int views, int money, bool failedExtraction, Comment[] comments)
     {
         // all the clients need to play the video, the host send out RPCs to them to set their ClientDoNotPlayTheseSpookTubeVideoWithRewards collection up
         Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] There are {KeepCameraAfterDeath.Instance.ClientDoNotPlayTheseSpookTubeVideoWithRewards.Count} videos that should not be rewarded by SpookTube.");
@@ -35,14 +36,14 @@ public class UploadCompleteStatePatch
             self.m_ui.PlayVideo(recording, views, comments, delegate
             {
                 // let the recording play, but don't bother doing anything once the recording is complete
-                // (typically we would award views and money wtihin this delegate)
+                // (typically we would award views and money within this delegate)
             });
             return;
         }
         else
         {
             Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Award views and money for video with ID #{recording.videoHandle.id}");
-            orig(self, recording, score, views, money, comments);
+            orig(self, recording, score, views, money, failedExtraction, comments);
             return;            
         }
     }
