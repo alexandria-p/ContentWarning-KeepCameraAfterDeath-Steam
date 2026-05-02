@@ -1,61 +1,52 @@
+using HarmonyLib;
 using MyceliumNetworking;
 
 namespace KeepCameraAfterDeath.Patches;
 
+[HarmonyPatch(typeof(Player))]
 public class PlayerPatch
 {
-    internal static void Init()
+    [HarmonyPatch(nameof(Player.Update))]
+    [HarmonyPostfix] // originally had this as prefix, but I dont think it matters that it is postfix. If i get complaints, I will try changing it back.
+    private static void Update_Postfix(Player __instance)
     {
-        On.Player.Update += Player_Update;
+        if (KeepCameraAfterDeath.Instance.ClientPendingRewardForCameraReturn == null
+            || !__instance.IsLocal
+            || !__instance.data.playerSetUpAndReady
+            || SurfaceNetworkHandler.RoomStats == null
+            || TimeOfDayHandler.TimeOfDay != TimeOfDay.Evening)
+        {
+            return;
+        }
+
+        // When returning from spelunking, must wait until camera.main and players exist before running rewards 
+        // (or SFX that plays when UI message is shown will fail and wreak havoc) 
+        // so we run the code here on Player.Update()
+
+        AddCashToRoom();
+        AddMCToPlayers();
+        KeepCameraAfterDeath.Instance.ClearPendingRewardForCameraReturn();
     }
 
-    // When returning from spelunking, must wait until camera.main and players exist before running rewards 
-    // (or SFX that plays when UI message is shown will fail and wreak havoc) 
-    // so we run the code here on Player.Update()
-    private static void Player_Update(On.Player.orig_Update orig, Player self)
+    private static void AddCashToRoom()
     {
-        // See if there is a pending reward
-        // (and that the player & room exist)
-        if (KeepCameraAfterDeath.Instance.ClientPendingRewardForCameraReturn != null 
-            && self.IsLocal 
-            && self.data.playerSetUpAndReady
-            && SurfaceNetworkHandler.RoomStats != null
-            && TimeOfDayHandler.TimeOfDay == TimeOfDay.Evening)
+        var hostSpecifiedCashReward = KeepCameraAfterDeath.Instance.ClientPendingRewardForCameraReturn!.Value.cash;
+        if (hostSpecifiedCashReward <= 0) return;
+
+        UserInterface.ShowMoneyNotification("Cash Received", $"${(int)hostSpecifiedCashReward}", MoneyCellUI.MoneyCellType.Revenue);
+
+        // We only want money to be added to the room once, so let the host do it
+        if (MyceliumNetwork.IsHost)
         {
-            AddCashToRoom();
-            AddMCToPlayers();
-            KeepCameraAfterDeath.Instance.ClearPendingRewardForCameraReturn();
+            SurfaceNetworkHandler.RoomStats.AddMoney((int)hostSpecifiedCashReward);
         }
+    }
 
-        orig(self);
-
-
-        void AddCashToRoom()
-        {
-            var hostSpecifiedCashReward = KeepCameraAfterDeath.Instance.ClientPendingRewardForCameraReturn!.Value.cash;
-            if (hostSpecifiedCashReward <= 0)
-            {
-                return;
-            }
-
-            UserInterface.ShowMoneyNotification("Cash Received", $"${(int)hostSpecifiedCashReward}", MoneyCellUI.MoneyCellType.Revenue);
-
-            // We only want money to be added to the room once, so let the host do it
-            if (MyceliumNetwork.IsHost)
-            {
-                SurfaceNetworkHandler.RoomStats.AddMoney((int)hostSpecifiedCashReward);
-            }
-        }
-
-        void AddMCToPlayers()
-        {
-            var hostSpecifiedMCReward = KeepCameraAfterDeath.Instance.ClientPendingRewardForCameraReturn!.Value.mc;
-            if (hostSpecifiedMCReward <= 0)
-            {
-                return;
-            }
-            // Client's handle adding their own MC reward, but the amount is set by the host
-            MetaProgressionHandler.AddMetaCoins((int)hostSpecifiedMCReward);
-        }
+    private static void AddMCToPlayers()
+    {
+        var hostSpecifiedMCReward = KeepCameraAfterDeath.Instance.ClientPendingRewardForCameraReturn!.Value.mc;
+        if (hostSpecifiedMCReward <= 0) return;
+        // Client's handle adding their own MC reward, but the amount is set by the host
+        MetaProgressionHandler.AddMetaCoins((int)hostSpecifiedMCReward);
     }
 }
