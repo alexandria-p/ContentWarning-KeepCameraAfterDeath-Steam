@@ -57,6 +57,7 @@ public class PersistentObjectsHolderPatch
         }
     }
 
+    // helper method
     private static List<VideoCamera> FindVideoCamerasInSet(List<PersistentObjectInfo> persistantObjects)
     {
         var list = new List<VideoCamera>();

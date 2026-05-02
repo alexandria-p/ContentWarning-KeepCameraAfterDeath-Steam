@@ -1,4 +1,3 @@
-using KeepCameraAfterDeath.Patches;
 using MyceliumNetworking;
 using Zorro.Settings;
 using Unity.Mathematics;

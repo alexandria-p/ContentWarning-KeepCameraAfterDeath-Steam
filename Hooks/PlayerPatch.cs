@@ -7,7 +7,7 @@ namespace KeepCameraAfterDeath.Patches;
 public class PlayerPatch
 {
     [HarmonyPatch(nameof(Player.Update))]
-    [HarmonyPostfix]
+    [HarmonyPostfix] // originally had this as prefix, but I dont think it matters that it is postfix. If i get complaints, I will try changing it back.
     private static void Update_Postfix(Player __instance)
     {
         if (KeepCameraAfterDeath.Instance.ClientPendingRewardForCameraReturn == null
@@ -18,6 +18,10 @@ public class PlayerPatch
         {
             return;
         }
+
+        // When returning from spelunking, must wait until camera.main and players exist before running rewards 
+        // (or SFX that plays when UI message is shown will fail and wreak havoc) 
+        // so we run the code here on Player.Update()
 
         AddCashToRoom();
         AddMCToPlayers();
