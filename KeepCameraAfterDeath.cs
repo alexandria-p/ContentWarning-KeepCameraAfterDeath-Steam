@@ -1,5 +1,3 @@
-using HarmonyLib;
-using System.Reflection;
 using KeepCameraAfterDeath.Patches;
 using MyceliumNetworking;
 using Zorro.Settings;
@@ -48,8 +46,6 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
     public const uint myceliumNetworkModId = 61812; // meaningless, as long as it is the same between all the clients
     public static KeepCameraAfterDeath Instance { get; private set; } = null!;
 
-    private Harmony? _harmony;
-
     public bool PlayerSettingEnableRewardForCameraReturn { get; private set; }
     public bool PlayerSettingDoNotRewardRecoveredSpookTubeFootage { get; private set; }
     public float PlayerSettingMetaCoinReward { get; private set; }
@@ -64,8 +60,6 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
     private void Awake()
     {
         Instance = this;
-        _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
-        _harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
 
     private void Start()
@@ -77,7 +71,6 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
     void OnDestroy()
     {
         //Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] ON DESTROY!");
-        _harmony?.UnpatchSelf();
         MyceliumNetwork.DeregisterNetworkObject(Instance, myceliumNetworkModId);
     }
 
@@ -248,6 +241,7 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
         }
 
         PreservedCameraInstanceDataCollectionForHost.Clear();
+        Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Cleared preserved camera instance data.");
     }
 
     public void ClearAllRestoredVideoHandleIds()
@@ -258,16 +252,19 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
         }
 
         RestoredVideoHandleIdsCollectionForHost.Clear();
+        Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Cleared restored video handle ids.");
     }
 
     public void ClearPendingRewardForCameraReturn()
     {
         ClientPendingRewardForCameraReturn = null;
+        Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Cleared any pending reward for camera return.");
     }
 
     public void ClearClientDoNotPlayTheseSpookTubeVideoWithRewards()
     {
         ClientDoNotPlayTheseSpookTubeVideoWithRewards.Clear();
+        Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Cleared any spooktube penalty for recovered footage.");
     }
 
     public bool IsFinalDayAndQuotaNotMet()
@@ -333,6 +330,21 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
     }
 
     [ContentWarningSetting]
+    public class EnableAlwaysRewardSpookTubeSetting : BoolSetting, IExposedSetting
+    {
+        public SettingCategory GetSettingCategory() => SettingCategory.Mods;
+
+        public override void ApplyValue()
+        {
+            KeepCameraAfterDeath.Instance.SetPlayerSettingDoNotRewardRecoveredSpookTubeFootage(Value);
+        }
+
+        public string GetDisplayName() => "[KeepCameraAfterDeath] Do not award Spooktube views/money when you watch recovered camera footage on the TV, if the camera footage was lost underground and had to be recovered (uses the host's game settings)";
+
+        protected override bool GetDefaultValue() => false;
+    }
+
+    [ContentWarningSetting]
     public class EnableRewardForCameraReturnSetting : BoolSetting, IExposedSetting
     {
         public SettingCategory GetSettingCategory() => SettingCategory.Mods;
@@ -342,9 +354,9 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
             KeepCameraAfterDeath.Instance.SetPlayerSettingEnableRewardForCameraReturn(Value);
         }
 
-        public string GetDisplayName() => "[KeepCameraAfterDeath] Turn on incentives for bringing the camera back to the surface (uses the host's game settings)";
+        public string GetDisplayName() => "[KeepCameraAfterDeath] Optional: Turn on incentives for bringing the camera back to the surface (uses the host's game settings)";
 
-        protected override bool GetDefaultValue() => true;
+        protected override bool GetDefaultValue() => false;
     }
 
     [ContentWarningSetting]
@@ -357,7 +369,7 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
             KeepCameraAfterDeath.Instance.SetPlayerSettingEnableSplitRewardsForMultipleCameras(Value);
         }
 
-        public string GetDisplayName() => "[KeepCameraAfterDeath] Split the reward incentives for each camera successfully returned (instead of each camera being worth the full sum). This is for games that are modded to allow more than one camera at a time. (uses the host's game settings)";
+        public string GetDisplayName() => "[KeepCameraAfterDeath] [Only applies to optional incentives] Split the reward incentives for each camera successfully returned (instead of each camera being worth the full sum). This is for games that are modded to allow more than one camera at a time. (uses the host's game settings)";
 
         protected override bool GetDefaultValue() => true;
     }
@@ -372,7 +384,7 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
             KeepCameraAfterDeath.Instance.SetPlayerSettingMetaCoinReward(Value);
         }
 
-        public string GetDisplayName() => "[KeepCameraAfterDeath] Meta Coin (MC) reward for camera return (uses the host's game settings)";
+        public string GetDisplayName() => "[KeepCameraAfterDeath] [Only applies to optional incentives] Meta Coin (MC) reward for camera return (uses the host's game settings)";
 
         protected override float GetDefaultValue() => 10;
 
@@ -389,25 +401,10 @@ public class KeepCameraAfterDeath : MonoBehaviour // prev. BaseUnityPlugin
             KeepCameraAfterDeath.Instance.SetPlayerSettingCashReward(Value);
         }
 
-        public string GetDisplayName() => "[KeepCameraAfterDeath] Cash reward for camera return (uses the host's game settings)";
+        public string GetDisplayName() => "[KeepCameraAfterDeath] [Only applies to optional incentives] Cash reward for camera return (uses the host's game settings)";
 
         protected override float GetDefaultValue() => 0;
 
         protected override float2 GetMinMaxValue() => new float2(0f, 1000);
-    }
-
-    [ContentWarningSetting]
-    public class EnableAlwaysRewardSpookTubeSetting : BoolSetting, IExposedSetting
-    {
-        public SettingCategory GetSettingCategory() => SettingCategory.Mods;
-
-        public override void ApplyValue()
-        {
-            KeepCameraAfterDeath.Instance.SetPlayerSettingDoNotRewardRecoveredSpookTubeFootage(Value);
-        }
-        // todo
-        public string GetDisplayName() => "[KeepCameraAfterDeath] Do not award Spooktube views/money when you watch recovered camera footage on the TV, if the camera footage was lost underground and had to be recovered (uses the host's game settings)";
-
-        protected override bool GetDefaultValue() => false;
     }
 }

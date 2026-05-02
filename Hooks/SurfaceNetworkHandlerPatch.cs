@@ -12,10 +12,11 @@ public class SurfaceNetworkHandlerPatch
     [HarmonyPatch(nameof(SurfaceNetworkHandler.InitSurface))]
     [HarmonyPrefix]
     private static void InitSurface_Prefix(SurfaceNetworkHandler __instance)
-    {
+    {    
         // Clear data when entering new lobby
         if (SurfaceNetworkHandler.RoomStats == null)
         {
+            //Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Clear data when entering new lobby");
             KeepCameraAfterDeath.Instance.ClearData();
         }
 
@@ -23,6 +24,8 @@ public class SurfaceNetworkHandlerPatch
         // Set if camera was brought home
         if (MyceliumNetwork.IsHost && TimeOfDayHandler.TimeOfDay == TimeOfDay.Evening)
         {
+            Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Init surface (evening)");
+
             // - uses host settings to set rewards
             if (KeepCameraAfterDeath.Instance.PlayerSettingEnableRewardForCameraReturn)
             {
@@ -49,6 +52,10 @@ public class SurfaceNetworkHandlerPatch
     private static void NextDay_Postfix(SurfaceNetworkHandler __instance)
     {
         //Debug.Log($"[{MyPluginInfo.PLUGIN_NAME} v{MyPluginInfo.PLUGIN_VERSION}] Surface network handler patch NEXT DAY: reset data for day");
+        if (KeepCameraAfterDeath.Instance.IsFinalDayAndQuotaNotMet())
+        {
+            return; //early out - do not bother resetting camera data if this is final (failed) day
+        }
 
         // camera spawning doesnt happen till later in onSlept, so resetting the data here after NextDay is complete within OnSlept should be fine.
         KeepCameraAfterDeath.Instance.Command_ResetDataforDay();
