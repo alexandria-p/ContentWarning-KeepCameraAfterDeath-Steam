@@ -24,7 +24,7 @@ The host decides whether or not rewards should be distributed for returning with
 [list]
     [*]Install the mod on the Steam Workshop
     [*]Ensure you have its dependencies also installed
-    [*]If there is any trouble, try moving Content Loader and Mycelium higher up the mod loader than this mod.
+    [*]If there is any trouble, try moving Mycelium higher up the mod loader than this mod.
     [*]Then check the "Troubleshooting" section below
 [/list]
 
