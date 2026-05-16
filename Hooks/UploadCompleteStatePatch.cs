@@ -16,7 +16,7 @@ public class UploadCompleteStatePatch
 {
     [HarmonyPatch(nameof(UploadCompleteState.PlayVideo))]
     [HarmonyPrefix]
-    private static bool PlayVideo_Prefix(UploadCompleteState __instance, CameraRecording recording, int score, int views, int money, bool failedExtraction, Comment[] comments)
+    private static bool PlayVideo_Prefix(UploadCompleteState __instance, CameraRecording recording, int score, int views, int money, Comment[] comments)
     {
         // all the clients need to play the video, the host send out RPCs to them to set their ClientDoNotPlayTheseSpookTubeVideoWithRewards collection up
         if (KeepCameraAfterDeath.Instance.ClientDoNotPlayTheseSpookTubeVideoWithRewards.Count > 0)

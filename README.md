@@ -29,6 +29,9 @@ The host decides whether or not rewards should be distributed for returning with
 
 ### Changelog
 
+**v3.0.1**
+- Mod is now compatible with latest version of CW, as well as CW_legacy
+
 **v3.0.0**
 - Fix mod so it is compatible with 2026 CW update
 - Convert mod to Harmony, remove MM_HOOK dependency

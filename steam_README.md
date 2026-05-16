@@ -30,6 +30,11 @@ The host decides whether or not rewards should be distributed for returning with
 
 [h3]Changelog[/h3]
 
+[i]v3.0.1[/i]
+[list]
+    [*]Mod is now compatible with latest version of CW, as well as CW_legacy
+[/list]
+
 [i]v3.0.0[/i]
 [list]
     [*]Fix mod so it is compatible with 2026 CW update
